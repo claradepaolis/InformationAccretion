@@ -124,6 +124,30 @@ def calc_ia(term, count_matrix, ontology, terms_index):
     return -np.log2(prots_with_term/prots_with_parents)
 
 
+def get_alt_id(ont_graph):
+    """
+        Returns a dict mapping the alternate IDs to their primary node ID in the ont_graph
+    """
+    alt_id_mapping_dict = {}
+    for node in ontology_graph.nodes(data=True):
+        node_id, attributes = node
+        alt_id = attributes.get('alt_id')
+        if alt_id is not None:
+            for a_id in alt_id:
+                alt_id_mapping_dict[a_id] = node_id
+                
+    return alt_id_mapping_dict
+
+
+def replace_alt_id(terms_df, ont_graph):
+    """
+        Replaces the terms that show up in the terms_df with their alternate IDs, with their primary ID in the ont_graph 
+    """
+    alt_id_mapping_dict = get_alt_id(ont_graph)
+    terms_df['term'] = terms_df['term'].map(alt_id_mapping_dict).fillna(terms_df['term'])
+    return terms_df
+   
+
 if __name__ == '__main__':
     
     args = parse_inputs(sys.argv[1:])
@@ -138,6 +162,15 @@ if __name__ == '__main__':
         
     # these terms should be propagated using the same ontology, otherwise IA may be negative
     annotation_df = pd.read_csv(args.annot, sep='\t')
+    
+    # Name the columns
+    annotation_df.columns = ['EntryID', 'term', 'aspect']
+    
+    # Map the ontology aspect to full forms
+    annotation_df['aspect'] = annotation_df['aspect'].replace({'F': 'MFO', 'P': 'BPO', 'C': 'CCO'}, regex=True)
+    
+    # Replace the alternate IDs, by their main ID in the ontology_graph
+    annotation_df = replace_alt_id(annotation_df, ontology_graph)
     
     # Get the three subontologies
     roots = {'BPO': 'GO:0008150', 'CCO': 'GO:0005575', 'MFO': 'GO:0003674'}
@@ -177,6 +210,7 @@ if __name__ == '__main__':
          'aspect': aspect}) for aspect in subontologies.keys()])
     
     # all counts should be non-negative
+    print(ia_df['ia'].min())
     assert ia_df['ia'].min() >= 0
     
     # Save to file
