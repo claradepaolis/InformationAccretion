@@ -60,7 +60,7 @@ def propagate_terms(terms_df, subontologies):
 
     propagated_terms = []
     for (protein, aspect), entry_df in terms_df.groupby(['EntryID', 'aspect']):
-        protein_terms = set().union(*[list(ancestor_lookup[aspect][t])+[t] for t in set(entry_df.term.values)])
+        protein_terms = set().union(*[list(ancestor_lookup[aspect][t])+[t] for t in set(entry_df.term.values) if t in ancestor_lookup[aspect]])
 
         propagated_terms += [{'EntryID': protein, 'term': t, 'aspect': aspect} for t in protein_terms]
 
