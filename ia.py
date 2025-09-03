@@ -132,8 +132,7 @@ def calc_ia(term, count_matrix, ontology, terms_index):
     return -np.log2(prots_with_term/prots_with_parents)
 
 
-if __name__ == '__main__':
-    
+def main():
     args = parse_inputs(sys.argv[1:])
     
     # load ontology graph and annotated terms
@@ -190,4 +189,7 @@ if __name__ == '__main__':
     print(f'Saving to file {args.outfile}')
     
     ia_df[['term','ia']].to_csv(args.outfile,  header=None, sep='\t', index=False)
-    
+
+
+if __name__ == '__main__':
+    main()

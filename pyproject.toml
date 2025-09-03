@@ -16,3 +16,9 @@ dependencies = [
 [build-system]
 requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[project.scripts]
+ia = "ia:main"
+
+[tool.setuptools]
+py-modules = ["ia"]
