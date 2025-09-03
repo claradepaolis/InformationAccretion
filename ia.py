@@ -1,3 +1,4 @@
+from os import makedirs, path
 import sys
 import argparse
 import obonet
@@ -6,6 +7,13 @@ import pandas as pd
 import networkx as nx
 from collections import Counter
 from scipy.sparse import dok_matrix
+from urllib import request
+
+
+def download_file(url, destination):
+    makedirs(path.dirname(destination), exist_ok=True)
+    request.urlretrieve(url, destination)
+    return destination
 
 
 def clean_ontology_edges(ontology):
@@ -131,8 +139,7 @@ if __name__ == '__main__':
     # load ontology graph and annotated terms
     if args.graph is None:
         print('Downloading OBO file from http://purl.obolibrary.org/obo/go/go-basic.obo')
-        ontology_graph = download_file('http://purl.obolibrary.org/obo/go/go-basic.obo', 
-                                       os.path.join(data_location, 'go-basic.obo'))
+        ontology_graph = download_file('http://purl.obolibrary.org/obo/go/go-basic.obo', 'go-basic.obo')
     else:
         ontology_graph = clean_ontology_edges(obonet.read_obo(args.graph))
         
