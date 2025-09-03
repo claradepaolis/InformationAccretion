@@ -15,15 +15,29 @@ If you are not sure that the terms have already been propagater of the structure
 
 [Clark and Radivojac, 2013] Clark WT, Radivojac P. Information-theoretic evaluation of predicted ontological annotations. Bioinformatics (2013) 29(13): i53-i61.
 
+## Installation
+Use pip to install:
+
+```bash
+pip install .
+```
+
 ## Usage
-If you have a dataset of GO annotations, eg terms.tsv, and the corresponding GO graph structure, eg go-basic.obo, compute IA with the following call  
-```python ia.py --annot terms.tsv --graph go-basic.obo```  
+After installation, the command `ia` is available from the CLI.
+
+If you have a dataset of GO annotations, eg terms.tsv, and the corresponding GO graph structure, eg go-basic.obo, compute IA with the following call
+```bash
+ia --annot terms.tsv --graph go-basic.obo
+```
 This operation takes about 2 minutes for a dataset of 5M terms
 
 If your annotated terms are not already propagated, enable the --prop flag:  
-```python ia.py --annot terms.tsv --graph go-basic.obo --prop```  
+```
+ia --annot terms.tsv --graph go-basic.obo --prop
+```
 This operation may add about 4 minutes to the runtime for a dataset of 5M terms
 
+If `--graph` is omitted, the Gene Ontology graph is downloaded automatically.
 
 ## Disclaimer
 This is an independent implementation of the methods described in [Clark and Radivojac, 2013]
