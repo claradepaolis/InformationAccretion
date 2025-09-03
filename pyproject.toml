@@ -1,0 +1,18 @@
+[project]
+name = "information_accretion"
+authors = [{name="Clara De Paolis"}]
+version = "0.1.0"
+description = "Compute information accriterion metrics"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "networkx>=3.2.1",
+    "numpy>=2.0.2",
+    "obonet>=1.1.1",
+    "pandas>=2.3.2",
+    "scipy>=1.13.1",
+]
+
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
