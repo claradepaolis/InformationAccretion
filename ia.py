@@ -58,6 +58,41 @@ def fetch_aspect(ontology, root:str):
     return subont_
 
 
+def term_aspect(term, subontologies):
+    """
+    Find the aspect for a term
+    :param term: term ID, corresponding to name of node in graph
+    :param subontologies: dictionary of networkx graphs. keys are aspect name, 
+                          eg {'BPO': <networkx MultiDiGraph>, 'CCO': <networkx MultiDiGraph>}, 'MFO': <networkx MultiDiGraph>}
+    """
+
+    for aspect, graph in subontologies.items():
+        if term in graph.nodes:
+            return aspect
+
+    # if term is not found, nothing is returned 
+
+
+def lookup_aspect(annot_df, subontologies):
+    """
+    Find the aspect (BPO, CCO, or MFO) for terms in the annotation dataframe 
+    :param annot_df: dataframe with columns 'EntryID' and 'term'
+    :param subontologies: dictionary of networkx graphs. keys are aspect name,
+                          eg {'BPO': <networkx MultiDiGraph>, 'CCO': <networkx MultiDiGraph>}, 'MFO': <networkx MultiDiGraph>}
+    """
+
+    # find aspect for all terms
+    all_terms = annot_df.term.unique()
+    lookup = [(t, term_aspect(t, subontologies)) for t in all_terms]
+    
+    lookup_df = pd.DataFrame(lookup, columns=['term','aspect'])
+    
+    # merge with original dataframe
+    df = annot_df[['EntryID','term']].merge(lookup_df)
+
+    return df
+
+
 def propagate_terms(terms_df, subontologies):
     """
     Propagate terms in DataFrame terms_df abbording to the structure in subontologies.
@@ -150,7 +185,14 @@ def run(annotation_path: str, output_file_path: str, obo_path: Optional[str] = N
     # Get the three subontologies
     roots = {'BPO': 'GO:0008150', 'CCO': 'GO:0005575', 'MFO': 'GO:0003674'}
     subontologies = {aspect: fetch_aspect(ontology_graph, roots[aspect]) for aspect in roots} 
-    
+ 
+    # check annotation format
+    if ('EntryID' not in annotation_df.columns) or ('term' not in annotation_df.columns):
+        raise KeyError("Annotation file should have column headers 'EntryID' and 'term'")
+    if 'aspect' not in annotation_df.columns:
+        # look up aspect for each term
+        annotation_df = lookup_aspect(annotation_df, subontologies)
+      
     if propagate_annotations:
         print('Propagating Terms')
         annotation_df = propagate_terms(annotation_df, subontologies)
@@ -185,7 +227,9 @@ def run(annotation_path: str, output_file_path: str, obo_path: Optional[str] = N
          'aspect': aspect}) for aspect in subontologies.keys()])
     
     # all counts should be non-negative
-    assert ia_df['ia'].min() >= 0
+    if ia_df['ia'].min() < 0:
+        raise ValueError('Negative Information Accretion values encountered. Propagate terms on ontology to ensure valid IA values.\n' \
+                         'If terms in input file are already propagated, ensure this was done on the same ontology used here') 
     
     # Save to file
     print(f'Saving to file {output_file_path}')

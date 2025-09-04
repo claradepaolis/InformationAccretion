@@ -39,6 +39,31 @@ This operation may add about 4 minutes to the runtime for a dataset of 5M terms
 
 If `--graph` is omitted, the Gene Ontology graph is downloaded automatically.
 
+
+The annotation file should be a tab-delimited file with headers `EntryID`, `term`, and `aspect`. 
+```
+EntryID term    aspect
+target1 GO:0033058      BPO
+target1 GO:0043056      BPO
+target1 GO:0050879      BPO
+target1 GO:0071965      BPO
+target2 GO:0031987      BPO
+target2 GO:0032501      BPO
+```
+
+The aspect should be one of BPO, CCO, or MFO. If the aspect column is missing, the code will look up the aspect. 
+In this case, the file should include `EntryID` and `term` columns:
+```
+EntryID term
+target1 GO:0033058
+target1 GO:0043056
+target1 GO:0050879
+target1 GO:0071965
+target2 GO:0031987
+target2 GO:0032501
+```
+
+
 ## Disclaimer
 This is an independent implementation of the methods described in [Clark and Radivojac, 2013]
 
