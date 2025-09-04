@@ -1,3 +1,4 @@
+from os import makedirs, path
 import sys
 import argparse
 import obonet
@@ -6,6 +7,19 @@ import pandas as pd
 import networkx as nx
 from collections import Counter
 from scipy.sparse import dok_matrix
+from typing import Optional
+import requests
+
+
+def download_file(url, destination):
+    dest_path = path.dirname(destination) or "."
+    makedirs(dest_path, exist_ok=True)
+    with requests.get(url, stream=True, timeout=60) as r:
+        r.raise_for_status()
+        with open(destination, "wb") as f:
+            for chunk in r.iter_content(8192):
+                f.write(chunk)
+    return destination
 
 
 def clean_ontology_edges(ontology):
@@ -124,26 +138,20 @@ def calc_ia(term, count_matrix, ontology, terms_index):
     return -np.log2(prots_with_term/prots_with_parents)
 
 
-if __name__ == '__main__':
-    
-    args = parse_inputs(sys.argv[1:])
-    
+def run(annotation_path: str, output_file_path: str, obo_path: Optional[str] = None, propagate_annotations: bool = False):
     # load ontology graph and annotated terms
-    if args.graph is None:
+    if obo_path is None:
         print('Downloading OBO file from http://purl.obolibrary.org/obo/go/go-basic.obo')
-        ontology_graph = download_file('http://purl.obolibrary.org/obo/go/go-basic.obo', 
-                                       os.path.join(data_location, 'go-basic.obo'))
-    else:
-        ontology_graph = clean_ontology_edges(obonet.read_obo(args.graph))
-        
+        obo_path = download_file('http://purl.obolibrary.org/obo/go/go-basic.obo', 'go-basic.obo')
+    ontology_graph = clean_ontology_edges(obonet.read_obo(obo_path))
     # these terms should be propagated using the same ontology, otherwise IA may be negative
-    annotation_df = pd.read_csv(args.annot, sep='\t')
-    
+    annotation_df = pd.read_csv(annotation_path, sep='\t')
+
     # Get the three subontologies
     roots = {'BPO': 'GO:0008150', 'CCO': 'GO:0005575', 'MFO': 'GO:0003674'}
     subontologies = {aspect: fetch_aspect(ontology_graph, roots[aspect]) for aspect in roots} 
     
-    if args.prop:
+    if propagate_annotations:
         print('Propagating Terms')
         annotation_df = propagate_terms(annotation_df, subontologies)
     
@@ -180,7 +188,15 @@ if __name__ == '__main__':
     assert ia_df['ia'].min() >= 0
     
     # Save to file
-    print(f'Saving to file {args.outfile}')
-    
-    ia_df[['term','ia']].to_csv(args.outfile,  header=None, sep='\t', index=False)
-    
+    print(f'Saving to file {output_file_path}')
+
+    ia_df[['term', 'ia']].to_csv(output_file_path, header=None, sep='\t', index=False)
+
+
+def main():
+    args = parse_inputs(sys.argv[1:])
+    run(annotation_path=args.annot, obo_path=args.graph, propagate_annotations=args.prop, output_file_path=args.outfile)
+
+
+if __name__ == '__main__':
+    main()
