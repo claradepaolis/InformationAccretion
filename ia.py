@@ -12,7 +12,8 @@ from urllib import request
 
 
 def download_file(url, destination):
-    makedirs(path.dirname(destination), exist_ok=True)
+    dest_path = path.dirname(destination) or "."
+    makedirs(path.dirname(dest_path), exist_ok=True)
     request.urlretrieve(url, destination)
     return destination
 
