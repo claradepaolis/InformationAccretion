@@ -142,9 +142,8 @@ def run(annotation_path: str, output_file_path: str, obo_path: Optional[str] = N
     # load ontology graph and annotated terms
     if obo_path is None:
         print('Downloading OBO file from http://purl.obolibrary.org/obo/go/go-basic.obo')
-        ontology_graph = download_file('http://purl.obolibrary.org/obo/go/go-basic.obo', 'go-basic.obo')
-    else:
-        ontology_graph = clean_ontology_edges(obonet.read_obo(obo_path))
+        obo_path = download_file('http://purl.obolibrary.org/obo/go/go-basic.obo', 'go-basic.obo')
+    ontology_graph = clean_ontology_edges(obonet.read_obo(obo_path))
     # these terms should be propagated using the same ontology, otherwise IA may be negative
     annotation_df = pd.read_csv(annotation_path, sep='\t')
 
