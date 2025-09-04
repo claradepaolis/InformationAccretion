@@ -8,13 +8,17 @@ import networkx as nx
 from collections import Counter
 from scipy.sparse import dok_matrix
 from typing import Optional
-from urllib import request
+import requests
 
 
 def download_file(url, destination):
     dest_path = path.dirname(destination) or "."
-    makedirs(path.dirname(dest_path), exist_ok=True)
-    request.urlretrieve(url, destination)
+    makedirs(dest_path, exist_ok=True)
+    with requests.get(url, stream=True, timeout=60) as r:
+        r.raise_for_status()
+        with open(destination, "wb") as f:
+            for chunk in r.iter_content(8192):
+                f.write(chunk)
     return destination
 
 
