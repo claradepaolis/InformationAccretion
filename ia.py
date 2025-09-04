@@ -7,6 +7,7 @@ import pandas as pd
 import networkx as nx
 from collections import Counter
 from scipy.sparse import dok_matrix
+from typing import Optional
 from urllib import request
 
 
@@ -132,7 +133,7 @@ def calc_ia(term, count_matrix, ontology, terms_index):
     return -np.log2(prots_with_term/prots_with_parents)
 
 
-def run(annotation_path: str, obo_path: str, output_file_path: str, propagate_annotations: bool = False):
+def run(annotation_path: str, output_file_path: str, obo_path: Optional[str] = None, propagate_annotations: bool = False):
     # load ontology graph and annotated terms
     if obo_path is None:
         print('Downloading OBO file from http://purl.obolibrary.org/obo/go/go-basic.obo')
