@@ -39,7 +39,7 @@ This operation may add about 4 minutes to the runtime for a dataset of 5M terms
 
 If `--graph` is omitted, the Gene Ontology graph is downloaded automatically.
 
-
+### Annotation file
 The annotation file should be a tab-delimited file with headers `EntryID`, `term`, and `aspect`. 
 ```
 EntryID term    aspect
@@ -62,6 +62,10 @@ target1 GO:0071965
 target2 GO:0031987
 target2 GO:0032501
 ```
+
+Annotations can be unpropagated or propagated in this file. Note that if they've been propagated already, 
+this must be done on the same graph that is passed in to this code. Otherwise, IA may be computed to be 
+a negative (invalid) value.
 
 
 ## Disclaimer
