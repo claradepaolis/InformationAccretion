@@ -151,7 +151,10 @@ def parse_inputs(argv):
     
     parser.add_argument('--prop', '-p', action='store_true', 
                         help='Flag to propagate terms in annotation file according to the ontology graph')
-    
+
+    parser.add_argument('--parse_obsolete', default=False, action=argparse.BooleanOptionalAction,
+                        help='Flag to read obsolete ontology terms in the the ontology graph. False by default.')
+
     return parser.parse_args(argv)
 
 
@@ -173,12 +176,13 @@ def calc_ia(term, count_matrix, ontology, terms_index):
     return -np.log2(prots_with_term/prots_with_parents)
 
 
-def run(annotation_path: str, output_file_path: str, obo_path: Optional[str] = None, propagate_annotations: bool = False):
+def run(annotation_path: str, output_file_path: str, obo_path: Optional[str] = None, propagate_annotations: bool = False,
+        parse_obsolete: bool = False):
     # load ontology graph and annotated terms
     if obo_path is None:
         print('Downloading OBO file from http://purl.obolibrary.org/obo/go/go-basic.obo')
         obo_path = download_file('http://purl.obolibrary.org/obo/go/go-basic.obo', 'go-basic.obo')
-    ontology_graph = clean_ontology_edges(obonet.read_obo(obo_path))
+    ontology_graph = clean_ontology_edges(obonet.read_obo(obo_path, ignore_obsolete=(not parse_obsolete)))
     # these terms should be propagated using the same ontology, otherwise IA may be negative
     annotation_df = pd.read_csv(annotation_path, sep='\t')
 
@@ -239,7 +243,8 @@ def run(annotation_path: str, output_file_path: str, obo_path: Optional[str] = N
 
 def main():
     args = parse_inputs(sys.argv[1:])
-    run(annotation_path=args.annot, obo_path=args.graph, propagate_annotations=args.prop, output_file_path=args.outfile)
+    run(annotation_path=args.annot, obo_path=args.graph, propagate_annotations=args.prop, output_file_path=args.outfile,
+        parse_obsolete=args.parse_obsolete)
 
 
 if __name__ == '__main__':

@@ -39,6 +39,8 @@ This operation may add about 4 minutes to the runtime for a dataset of 5M terms
 
 If `--graph` is omitted, the Gene Ontology graph is downloaded automatically.
 
+Obsolete ontologies are ignored by default when reading the ontology graph file. Add flag `--parse_obsolete` to also read obsolete terms.
+
 ### Annotation file
 The annotation file should be a tab-delimited file with headers `EntryID`, `term`, and `aspect`. 
 ```
